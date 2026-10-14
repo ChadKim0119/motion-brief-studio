@@ -2,7 +2,12 @@
 
 모션그래픽을 **기획 → 스크립트 → 나레이션 → 씬 편집 → 내보내기** 순서로 다듬고, 출처 태그가 붙은 버전으로 관리하는 범용 제작 툴입니다. 결과물은 다른 Claude 작업에 그대로 넘길 수 있는 **제작 안내서(`brief.md`)**, 나레이션 텍스트, 애니마틱 MP4, 썸네일입니다.
 
-![씬 편집](docs/screenshots/s3_edit_t5.png)
+![씬 편집](docs/screenshots/s3_edit.png)
+
+## 디자인 시스템
+화면은 **MapStone 디자인 시스템(Blue Infographic v1)** 을 따릅니다. 토큰(`ms-color-*`, `ms-space-*`, `ms-radius-*`, `ms-shadow-*`, 모션)은 `src/01_head.html`의 `:root`에 MapStone `tokens.json` 값 그대로 정의하고, 앱 내부 별칭(`--bg`, `--accent` …)은 모두 그 의미 토큰을 가리킵니다. 글꼴은 Pretendard Variable 하나(`dist/fonts/`), 라이트 테마 하나이며, 문구는 합니다체·과거형 토스트·`YYYY.MM.DD HH:mm` 날짜 형식을 씁니다.
+
+애니마틱(영상) 안의 글꼴·색은 프로젝트별 비주얼 스타일 설정을 따르며 디자인 시스템과 별개입니다.
 
 ## 흐름
 
@@ -39,6 +44,7 @@ src/            페이지 조각 (스타일 → 마크업 → 스크립트 순�
   08_overlays.js  BGM 시트·버전 기록·가져오기·Claude 생성·도움말
   09_actions.js   예시 프로젝트·액션·이벤트·부팅
 dist/index.html  빌드 결과 (claude.ai 아티팩트로 게시하는 단일 파일)
+dist/fonts/      Pretendard Variable (SIL OFL, MapStone 디자인 시스템에서 가져옴) — 게시 때 함께 올림
 scripts/build.sh src → dist 빌드 (node 필요)
 docs/            안내서 형식, 스크린샷
 ```

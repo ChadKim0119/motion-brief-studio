@@ -16,7 +16,7 @@ function secs(t){t=Math.max(0,t||0);return t<60?t.toFixed(1)+'초':Math.floor(t/
 function mmss(t){t=Math.max(0,t||0);return pad(t/60)+':'+pad(t%60)}
 function srtTime(t){t=Math.max(0,t||0);const ms=Math.round((t-Math.floor(t))*1000);return pad(t/3600)+':'+pad(t%3600/60)+':'+pad(t%60)+','+pad(ms,3)}
 function rel(ts){if(!ts)return '';const d=(Date.now()-ts)/1000;if(d<45)return '방금';if(d<3600)return Math.round(d/60)+'분 전';if(d<86400)return Math.round(d/3600)+'시간 전';if(d<86400*7)return Math.round(d/86400)+'일 전';const x=new Date(ts);return `${x.getFullYear()}.${pad(x.getMonth()+1)}.${pad(x.getDate())}`}
-function stamp(ts){const x=new Date(ts||Date.now());return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())} ${pad(x.getHours())}:${pad(x.getMinutes())}`}
+function stamp(ts){const x=new Date(ts||Date.now());return `${x.getFullYear()}.${pad(x.getMonth()+1)}.${pad(x.getDate())} ${pad(x.getHours())}:${pad(x.getMinutes())}`}
 const ease={o:x=>1-Math.pow(1-x,3),o5:x=>1-Math.pow(1-x,5),io:x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,back:x=>{const c1=1.6,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)}};
 const hash=n=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v)};
 function debounce(fn,ms){let h;const f=(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),ms)};f.flush=()=>{clearTimeout(h);fn()};f.cancel=()=>clearTimeout(h);return f}
@@ -147,25 +147,25 @@ const Store={
  async fetchBlob(id){if(String(id).startsWith('local:'))return LOCALBLOB[id+':blob'];const r=await fetch(this.url(id));if(!r.ok)throw new Error('asset '+r.status);return r.blob()},
 };
 const ERR={
- not_granted:'이 페이지에 해당 권한이 허용되지 않았어요. 상단 아티팩트 메뉴의 권한에서 허용할 수 있습니다.',
- rate_limited:'요청이 많아 잠시 막혔어요. 조금 뒤 다시 시도해 주세요.',
- too_large:'파일이 너무 큽니다. 20MB 이하로 줄여 주세요.',
+ not_granted:'이 페이지에 해당 권한이 허용되지 않았습니다. 상단 아티팩트 메뉴의 권한에서 허용할 수 있습니다.',
+ rate_limited:'요청이 많아 잠시 처리하지 못했습니다. 잠시 뒤 다시 시도하세요.',
+ too_large:'파일이 너무 큽니다. 20MB 이하로 줄이세요.',
  unsupported_type:'지원하지 않는 파일 형식입니다.',
- quota_or_state:'저장 공간이 가득 찼어요. 쓰지 않는 레퍼런스를 지워 주세요.',
- quota_exceeded:'저장 한도에 도달했어요. 오래된 프로젝트를 정리해 주세요.',
+ quota_or_state:'저장 공간이 가득 찼습니다. 쓰지 않는 레퍼런스를 삭제하세요.',
+ quota_exceeded:'저장 한도에 도달했습니다. 오래된 프로젝트를 정리하세요.',
  invalid_argument:'저장 권한이 없거나 데이터가 너무 큽니다.',
- refused:'Claude가 이 요청을 처리하지 않았어요. 지시 문구를 바꿔 다시 시도해 주세요.',
- invalid_json:'Claude 응답을 읽지 못했어요. 다시 시도해 주세요.',
- sampling_disabled:'이 계정에서는 Claude 호출을 쓸 수 없어요.',
- session_expired:'로그인이 만료됐어요. 다시 로그인해 주세요.',
- prompt_too_large:'보낼 내용이 너무 깁니다. 원문 자료를 줄여 주세요.',
- declined:'저장을 취소했어요.',
- cancelled:'중단했어요.'};
-const errMsg=e=>ERR[e&&e.code]||(e&&e.message)||'문제가 생겼어요. 다시 시도해 주세요.';
+ refused:'Claude가 이 요청을 처리하지 않았습니다. 지시 문구를 바꿔 다시 시도하세요.',
+ invalid_json:'Claude 응답을 읽지 못했습니다. 다시 시도하세요.',
+ sampling_disabled:'이 계정에서는 Claude 호출을 쓸 수 없습니다.',
+ session_expired:'로그인이 만료되었습니다. 다시 로그인하세요.',
+ prompt_too_large:'보낼 내용이 너무 깁니다. 원문 자료를 줄이세요.',
+ declined:'저장을 취소했습니다.',
+ cancelled:'중단했습니다.'};
+const errMsg=e=>ERR[e&&e.code]||(e&&e.message)||'문제가 생겼습니다. 다시 시도하세요.';
 
 /* audio asset wrapper: audio types are not accepted as-is, so wrap as JSON */
 async function uploadAudio(file){
- if(file.size>14.5*1024*1024)throw {code:'too_large',message:'오디오는 14MB 이하만 저장할 수 있어요 (WAV라면 MP3/M4A로 변환 권장).'};
+ if(file.size>14.5*1024*1024)throw {code:'too_large',message:'오디오는 14MB 이하만 저장할 수 있습니다 (WAV라면 MP3/M4A로 변환 권장).'};
  const b64=await blobToB64(file);
  const wrapped=new Blob([JSON.stringify({mbsAudio:1,name:file.name,mime:file.type||'audio/wav',b64})],{type:'application/json'});
  const id=await Store.upload(wrapped,'application/json');
@@ -184,10 +184,10 @@ function img(id){if(!id)return null;let r=IMG[id];if(!r){r=IMG[id]={el:new Image
 
 /* ================= ui helpers ================= */
 function toast(msg,o={}){const el=document.createElement('div');el.className='toast'+(o.err?' err':'');el.innerHTML=`<span>${esc(msg)}</span>`+(o.action?`<button>${esc(o.action)}</button>`:'');if(o.action)el.querySelector('button').onclick=()=>{o.onAction&&o.onAction();el.remove()};$('#toasts').appendChild(el);setTimeout(()=>el.remove(),o.ms||(o.err?6000:3200))}
-async function copyText(t,label='복사했어요'){try{await navigator.clipboard.writeText(t);toast(label)}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();toast(ok?label:'복사가 막혀 있어요. 텍스트를 직접 선택해 복사해 주세요.',{err:!ok})}}
+async function copyText(t,label='복사했습니다.'){try{await navigator.clipboard.writeText(t);toast(label)}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}ta.remove();toast(ok?label:'복사가 막혀 있습니다. 텍스트를 직접 선택해 복사하세요.',{err:!ok})}}
 async function saveFile(filename,data){
- if(Cap.downloads){try{await Cap.downloads.save({filename,data});toast(filename+' 저장');return true}catch(e){if(e&&e.code==='declined')return false;toast(errMsg(e),{err:true});return false}}
- try{const blob=data instanceof Blob?data:new Blob([data]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();toast(filename+' 저장');return true}catch(e){toast('이 환경에서는 파일 저장을 할 수 없어요.',{err:true});return false}}
+ if(Cap.downloads){try{await Cap.downloads.save({filename,data});toast(filename+' 파일을 저장했습니다.');return true}catch(e){if(e&&e.code==='declined')return false;toast(errMsg(e),{err:true});return false}}
+ try{const blob=data instanceof Blob?data:new Blob([data]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();toast(filename+' 파일을 저장했습니다.');return true}catch(e){toast('이 환경에서는 파일 저장을 할 수 없습니다.',{err:true});return false}}
 function pickFile(accept,multiple=false){return new Promise(res=>{const f=$('#filepick');f.value='';f.accept=accept||'';f.multiple=multiple;f.onchange=()=>res(multiple?[...f.files]:f.files[0]||null);f.click()})}
 function modal(o){ // {title, body, foot, cls, onClose}
  const L=$('#layer');const wrap=document.createElement('div');wrap.className='scrim';

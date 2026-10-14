@@ -15,22 +15,22 @@ const pushUndo=debounce(()=>{if(!S.proj)return;const j=JSON.stringify(S.proj);if
 function touch(path,{structural=false}={}){if(!S.proj)return;
  S.proj.updatedAt=Date.now();pushUndo();scheduleSave();
  if(structural)refresh();else{live();Player.redrawAll();if(S.view==='edit'&&/^(s\.|S:|L:)/.test(path||''))renderTimeline()}}
-function undo(){pushUndo.flush();if(S.undo.length<2)return toast('되돌릴 변경이 없어요');S.redo.push(S.undo.pop());S.proj=norm(JSON.parse(S.undo[S.undo.length-1]));scheduleSave();refresh();toast('되돌렸어요')}
-function redo(){if(!S.redo.length)return;const j=S.redo.pop();S.undo.push(j);S.proj=norm(JSON.parse(j));scheduleSave();refresh();toast('다시 적용했어요')}
+function undo(){pushUndo.flush();if(S.undo.length<2)return toast('되돌릴 변경이 없습니다.');S.redo.push(S.undo.pop());S.proj=norm(JSON.parse(S.undo[S.undo.length-1]));scheduleSave();refresh();toast('되돌렸습니다.')}
+function redo(){if(!S.redo.length)return;const j=S.redo.pop();S.undo.push(j);S.proj=norm(JSON.parse(j));scheduleSave();refresh();toast('다시 적용했습니다.')}
 
 /* ================= save / open / versions ================= */
 function metaOf(p){const tl=timeline(p);return {title:p.title,stage:p.stage,updatedAt:p.updatedAt,createdAt:p.createdAt,scenes:p.scenes.length,duration:+tl.total.toFixed(1),aspect:p.brief.aspect,palette:p.brief.palette,stills:p.scenes.slice(0,8).map(s=>s.still&&s.still.assetId||null),lastV:(S.versions[0]&&S.versions[0].n)||0,example:!!p.example,thumb:(p.thumb&&p.thumb.assetId)||null}}
 let _lastMeta='';
 const scheduleSave=debounce(()=>saveNow(),1100);
 async function saveNow(){if(!S.proj||!S.pid)return;const p=S.proj;S.save='busy';renderSave();
- try{const json=JSON.stringify(p);if(json.length>250000)throw {code:'invalid_argument',message:'프로젝트 데이터가 너무 큽니다 (250KB). 원문 자료를 줄여 주세요.'};
+ try{const json=JSON.stringify(p);if(json.length>250000)throw {code:'invalid_argument',message:'프로젝트 데이터가 너무 큽니다 (250KB). 원문 자료를 줄이세요.'};
   await Store.saveDraft(S.pid,{...p,_writer:CLIENT});const m=metaOf(p);const mj=JSON.stringify(m);if(mj!==_lastMeta){await Store.saveMeta(S.pid,m);_lastMeta=mj}
-  S.save='ok';S.savedAt=Date.now()}catch(e){S.save='err';toast(e&&e.code==='invalid_argument'&&!e.message?'저장 권한이 없어 저장되지 않았어요.':errMsg(e),{err:true})}renderSave()}
+  S.save='ok';S.savedAt=Date.now()}catch(e){S.save='err';toast(e&&e.code==='invalid_argument'&&!e.message?'저장 권한이 없어 저장되지 않았습니다.':errMsg(e),{err:true})}renderSave()}
 const CLIENT=uid('c');
 let unsubV=null,unsubD=null;
 async function openProject(pid,{view}={}){
  Player.stop();S.versions=[];S.undo=[];S.redo=[];S.dirty=0;S.sel=0;S.t=0;S.tab='content';S.remoteBanner=false;
- let d=await Store.getDraft(pid);if(!d){toast('프로젝트를 찾을 수 없어요',{err:true});return go('home')}
+ let d=await Store.getDraft(pid);if(!d){toast('프로젝트를 찾을 수 없습니다. 목록에서 다시 여세요.',{err:true});return go('home')}
  S.proj=norm(d);S.pid=pid;S.undo=[JSON.stringify(S.proj)];_lastMeta='';
  unsubV&&unsubV();unsubV=Store.subVersions(pid,vs=>{S.versions=vs;S.base=vs[0]?vs[0].snapshot:null;renderTop();if($('.drawer'))renderHistory()});
  unsubD&&unsubD();unsubD=Store.subDraft(pid,d=>{if(!d||d._writer===CLIENT||!S.proj)return;if((d.updatedAt||0)>(S.proj.updatedAt||0)+500){S.remoteBanner=d;renderBanner()}});
@@ -38,7 +38,7 @@ async function openProject(pid,{view}={}){
  go(view||VIEWS[clamp((S.proj.stage||1)-1,0,4)][0]);
  if(S.proj.narration&&S.proj.narration.assetId)audioBuffer(S.proj.narration.assetId).then(()=>{Player.redrawAll()}).catch(()=>{});
 }
-function renderBanner(){const b=$('#banner');if(!b)return;b.hidden=!S.remoteBanner;if(S.remoteBanner)b.innerHTML=`${ic('history')}<span>다른 창이나 사용자가 이 프로젝트를 수정했어요.</span><span class="sp"></span><button class="btn sm" data-act="loadRemote">최신 내용 불러오기</button><button class="btn sm ghost" data-act="dismissRemote">무시</button>`}
+function renderBanner(){const b=$('#banner');if(!b)return;b.hidden=!S.remoteBanner;if(S.remoteBanner)b.innerHTML=`${ic('history')}<span>다른 창이나 사용자가 이 프로젝트를 수정했습니다.</span><span class="sp"></span><button class="btn sm" data-act="loadRemote">최신 내용 불러오기</button><button class="btn sm ghost" data-act="dismissRemote">무시</button>`}
 function diffSummary(a,b){if(!a)return ['첫 버전'];const out=[];
  if(a.title!==b.title)out.push('제목 변경');
  if(JSON.stringify(a.brief)!==JSON.stringify(b.brief))out.push('기획 수정');
@@ -68,15 +68,15 @@ function diffSummary(a,b){if(!a)return ['첫 버전'];const out=[];
 async function commitVersion({label='',note='',source={kind:'user'},attach=null,snapshot=null}={}){
  pushUndo.flush();if(!S.proj)return;const snap=clone(snapshot||S.proj);const n=(S.versions[0]?S.versions[0].n:0)+1;
  const v={id:'v'+pad(n,4),n,label:label||'',note:note||'',source,author:S.me.id||null,at:Date.now(),stage:snap.stage,summary:diffSummary(S.base,snap),snapshot:snap,attach:attach||null};
- const js=JSON.stringify(v);if(js.length>250000){toast('버전 데이터가 너무 큽니다. 원문 자료를 줄여 주세요.',{err:true});return null}
- try{await Store.addVersion(S.pid,v);if(!S.versions.some(x=>x.id===v.id))S.versions=[v,...S.versions];S.base=snap;S.dirty=0;scheduleSave();renderTop();toast(`v${n} 저장됨`);return v}catch(e){toast(errMsg(e),{err:true});return null}}
+ const js=JSON.stringify(v);if(js.length>250000){toast('버전 데이터가 너무 큽니다. 원문 자료를 줄이세요.',{err:true});return null}
+ try{await Store.addVersion(S.pid,v);if(!S.versions.some(x=>x.id===v.id))S.versions=[v,...S.versions];S.base=snap;S.dirty=0;scheduleSave();renderTop();toast(`v${n}을 저장했습니다.`);return v}catch(e){toast(errMsg(e),{err:true});return null}}
 
 /* ================= navigation & render ================= */
 function go(view){if(view!=='edit')Player.pause();S.view=view;if(S.proj){const i=VIEWS.findIndex(v=>v[0]===view);if(i>=0&&i+1>S.proj.stage){S.proj.stage=i+1;scheduleSave()}}render()}
 function render(){renderTop();renderMain()}
 function refresh(){if(S.view==='edit'){renderSceneList();renderInspector();renderTimeline();Player.resize();Player.redrawAll();renderTop();return}
  const v=$('.view');const st=v?v.scrollTop:0;renderMain();const v2=$('.view');if(v2)v2.scrollTop=st;renderTop()}
-const LOGO=`<span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M7 6.5l9.5 5.5L7 17.5z" fill="var(--bg)"/><path d="M18.6 3.6l2.2 2.2-2.2 2.2-2.2-2.2z" fill="var(--key)"/></svg></span>`;
+const LOGO=`<span class="logo-mark"><svg viewBox="0 0 24 24"><path d="M7 6.5l9.5 5.5L7 17.5z" fill="#ffffff"/><path d="M18.6 3.6l2.2 2.2-2.2 2.2-2.2-2.2z" fill="#87d0df"/></svg></span>`;
 function renderSave(){const el=$('#savestate');if(!el)return;el.className='savestate'+(S.save==='busy'?' busy':S.save==='err'?' err':'');el.innerHTML=`<i></i><span>${S.save==='busy'?'저장 중…':S.save==='err'?'저장 실패':S.local?'이 브라우저에 저장됨':'자동 저장됨'}</span>`}
 function renderTop(){const t=$('#top');if(!S.proj||S.view==='home'){t.innerHTML=`<button class="logo" data-act="home" title="프로젝트 목록">${LOGO}<span class="logo-word">Motion Brief Studio</span></button><span class="sp"></span><div class="top-r">${S.local?'<span class="pill warn" title="Claude 밖에서 열려 브라우저에만 저장됩니다">로컬 모드</span>':''}<button class="btn sm" data-act="import">${ic('import','s')}안내서 가져오기</button><button class="ibtn" data-act="help" title="사용 방법 (?)" aria-label="도움말">${ic('help')}</button></div>`;return}
  const v=S.versions[0];const vk=v&&v.source&&v.source.kind||'user';const vc=(SRC[vk]||SRC.user).c;
@@ -124,14 +124,14 @@ function viewHome(){const ps=S.projects.slice().sort((a,b)=>(b.updatedAt||0)-(a.
  <div class="row" style="justify-content:flex-end"><button class="btn lg" data-act="import">${ic('import')}안내서 가져오기</button><button class="btn lg pri" data-act="newProject">${ic('plus')}새 프로젝트</button></div></section>
  <div class="flow">${[
   ['기획','주제, 핵심 메시지, 길이·화면비, 비주얼 스타일, 레퍼런스, BGM 성격을 정합니다.','brief'],
-  ['스크립트','씬마다 나레이션·화면 텍스트·제작 의도를 씁니다. Claude 초안과 번역을 쓸 수 있어요.','scenes[]'],
+  ['스크립트','씬마다 나레이션·화면 텍스트·제작 의도를 씁니다. Claude 초안과 번역을 쓸 수 있습니다.','scenes[]'],
   ['나레이션','TTS용 텍스트와 보이스 지시문을 복사해 Gemini에서 음성을 만든 뒤, 오디오를 올립니다.','narration.txt'],
-  ['씬 편집','오디오에 맞춰 타이밍이 자동 정렬됩니다. 연출 컨트롤·스틸·다국어 자막을 다듬어요.','animatic'],
+  ['씬 편집','오디오에 맞춰 타이밍이 자동 정렬됩니다. 연출 컨트롤·스틸·다국어 자막을 다듬습니다.','animatic'],
   ['내보내기','제작 안내서(brief.md), 패키지 ZIP, 애니마틱 MP4, 썸네일, 자막 SRT를 받습니다.','brief.md · mp4']
  ].map(([h,p,o],i)=>`<div><span class="n">${pad(i+1)}</span><h4>${h}</h4><p>${p}</p><span class="out">${o}</span></div>`).join('')}</div>
  <div class="loop"><b>Claude와 주고받기</b><span>brief.md 내보내기</span><span class="arr">→</span><span>다른 프로젝트의 Claude에게 제작 요청</span><span class="arr">→</span><span>최종 MP4 · 수정된 brief.md 가져오기</span><span class="arr">→</span><span>출처 태그가 붙은 새 버전</span></div>
  <div class="sec-h" style="margin-bottom:12px"><h3>프로젝트 ${ps.length?`<span class="muted" style="font-weight:400">${ps.length}</span>`:''}</h3>${ps.length?`<button class="btn sm ghost" data-act="sample">${ic('film','s')}예시 프로젝트 추가</button>`:''}</div>
- ${ps.length?`<div class="plist">${ps.map(pcard).join('')}</div>`:`<div class="empty"><h4>아직 프로젝트가 없어요</h4><p>새 프로젝트를 만들거나, 예시 프로젝트(e-Care 컨셉 영상)로 전체 흐름을 먼저 살펴보세요.</p><div class="row" style="justify-content:center"><button class="btn" data-act="sample">${ic('film')}예시 프로젝트 열기</button><button class="btn pri" data-act="newProject">${ic('plus')}새 프로젝트</button></div></div>`}
+ ${ps.length?`<div class="plist">${ps.map(pcard).join('')}</div>`:`<div class="empty"><h4>아직 프로젝트가 없습니다</h4><p>새 프로젝트를 만들거나, 예시 프로젝트(e-Care 컨셉 영상)로 전체 흐름을 먼저 살펴보세요.</p><div class="row" style="justify-content:center"><button class="btn" data-act="sample">${ic('film')}예시 프로젝트 열기</button><button class="btn pri" data-act="newProject">${ic('plus')}새 프로젝트</button></div></div>`}
  </div>`}
 function pcard(m){const pal=m.palette||{bg:'#111',primary:'#888'};const st=(m.stills||[]).slice(0,6);while(st.length<4)st.push(null);
  return `<div class="pcard" role="button" tabindex="0" data-act="open" data-arg="${esc(m.id)}"><div class="pstrip">${st.map((id,i)=>`<i style="background-color:${i%2?pal.primary:pal.bg};${id?`background-image:url('${Store.url(id)}')`:''};opacity:${id?1:.55+.1*i}"></i>`).join('')}</div>
@@ -143,7 +143,7 @@ function viewBrief(){const p=S.proj,b=p.brief;const langs=enabledLangs(p);
  <div class="page-h"><div><div class="eyebrow">STEP 01 · 기획</div><h2>무엇을, 누구에게, 어떤 느낌으로</h2><p>여기 적은 내용이 Claude의 스크립트 초안과 제작 안내서의 기준이 됩니다. 비워 둔 항목은 Claude가 알아서 정합니다.</p></div></div>
  <div class="bgrid">
   <section class="card sec"><div class="sec-h"><h3>기본 정보</h3></div>
-   <div class="field"><label for="b-topic">주제 · 한 줄 설명<span class="hint">무엇을 설명하는 영상인가요?</span></label><textarea class="ta" id="b-topic" rows="3" data-bind="p.brief.topic" placeholder="예: 고객이 문제를 알기 전에 먼저 진단하고 연락하는 커넥티드카 케어 서비스">${esc(b.topic)}</textarea></div>
+   <div class="field"><label for="b-topic">주제 · 한 줄 설명<span class="hint">무엇을 설명하는 영상인지 적습니다</span></label><textarea class="ta" id="b-topic" rows="3" data-bind="p.brief.topic" placeholder="예: 고객이 문제를 알기 전에 먼저 진단하고 연락하는 커넥티드카 케어 서비스">${esc(b.topic)}</textarea></div>
    <div class="field"><label>핵심 메시지<span class="hint">시청자가 기억할 1~3가지</span></label>${b.messages.map((m,i)=>`<input class="in" id="b-msg${i}" data-bind="p.brief.messages.${i}" value="${esc(m)}" placeholder="${['메시지 1 (가장 중요)','메시지 2','메시지 3'][i]}">`).join('')}</div>
    <div class="field"><label for="b-aud">타겟 시청자</label><input class="in" id="b-aud" data-bind="p.brief.audience" value="${esc(b.audience)}" placeholder="예: 신차 구매 고객, 딜러사 임원"></div>
   </section>
@@ -184,14 +184,14 @@ function viewBrief(){const p=S.proj,b=p.brief;const langs=enabledLangs(p);
  </div>`}
 function refsHTML(scope,list){
  return `<div class="refgrid">${list.map(r=>`<div class="ref"><div class="th">${r.kind==='image'?`<img src="${Store.url(r.assetId)}" alt="">`:r.kind==='video'?`<video src="${Store.url(r.assetId)}" muted playsinline preload="metadata" onmouseenter="this.play()" onmouseleave="this.pause()"></video>`:r.kind==='link'?`<a href="${esc(r.url)}" target="_blank" rel="noopener" style="display:grid;place-items:center;gap:4px;color:var(--accent);text-decoration:none;padding:8px;text-align:center;font-size:11px;word-break:break-all">${ic('link','l')}${esc((r.url||'').replace(/^https?:\/\//,'').slice(0,40))}</a>`:`<div style="padding:10px;font-size:12px;color:var(--fg-2);text-align:left;align-self:start">${ic('msg')}</div>`}<span class="k">${{image:'IMG',video:'VIDEO',link:'LINK',note:'NOTE'}[r.kind]}</span></div>
-  <div class="rb"><input id="rt-${r.id}" data-bind="R:${scope}:${r.id}.title" value="${esc(r.title)}" placeholder="제목"><input id="rn-${r.id}" data-bind="R:${scope}:${r.id}.note" value="${esc(r.note)}" placeholder="참고할 점 (예: 색감, 컷 리듬)"><div class="row"><span class="faint" style="font-size:10.5px">${rel(r.at)}</span><button class="ibtn sm" data-act="delRef" data-arg="${scope}:${r.id}" aria-label="레퍼런스 삭제">${ic('trash','s')}</button></div></div></div>`).join('')}
+  <div class="rb"><input id="rt-${r.id}" data-bind="R:${scope}:${r.id}.title" value="${esc(r.title)}" placeholder="제목"><input id="rn-${r.id}" data-bind="R:${scope}:${r.id}.note" value="${esc(r.note)}" placeholder="참고할 점 (예: 색감, 컷 리듬)"><div class="row"><span class="faint" style="font-size:12px">${rel(r.at)}</span><button class="ibtn sm" data-act="delRef" data-arg="${scope}:${r.id}" aria-label="레퍼런스 삭제">${ic('trash','s')}</button></div></div></div>`).join('')}
  <div class="drop" data-act="addRefFiles" data-arg="${scope}" data-dropfiles="${scope}" style="min-height:150px">${ic('upload','l')}<b style="font-size:12.5px">이미지 · 영상 추가</b><span style="font-size:11px">클릭하거나 끌어다 놓기 · 20MB 이하</span></div></div>
  <div class="row" style="margin-top:10px"><button class="btn sm" data-act="addRefLink" data-arg="${scope}">${ic('link','s')}링크 추가</button><button class="btn sm" data-act="addRefNote" data-arg="${scope}">${ic('msg','s')}텍스트 메모 추가</button></div>`}
 
 /* ================= SCRIPT ================= */
 function viewScript(){const p=S.proj;const langs=enabledLangs(p);const tl=timeline(p);
  return `<div class="wrap" style="max-width:1320px">
- <div class="page-h"><div><div class="eyebrow">STEP 02 · 스크립트</div><h2>씬별 나레이션과 의도</h2><p>나레이션은 <b>한 줄 = 자막 한 줄</b>입니다. 줄바꿈으로 자막을 끊어 주세요. ${langs.length>1?'다국어는 같은 줄 순서로 맞춰 적습니다.':'일본어·영어 자막은 기획 단계에서 켤 수 있어요.'}</p></div>
+ <div class="page-h"><div><div class="eyebrow">STEP 02 · 스크립트</div><h2>씬별 나레이션과 의도</h2><p>나레이션은 <b>한 줄 = 자막 한 줄</b>입니다. 줄바꿈으로 자막을 끊습니다. ${langs.length>1?'다국어는 같은 줄 순서로 맞춰 적습니다.':'일본어·영어 자막은 기획 단계에서 켤 수 있습니다.'}</p></div>
  <div class="row"><button class="btn" data-act="addScene">${ic('plus')}씬 추가</button>${langs.length>1?`<button class="btn" data-act="aiTranslate">${ic('spark')}빈 번역 채우기</button>`:''}<button class="btn ai" data-act="aiReviseAll">${ic('wand')}전체 수정 지시</button></div></div>
  <div class="script-layout"><div>${p.scenes.map((s,i)=>sblock(s,i,langs)).join('')}
   <button class="drop" data-act="addScene" style="width:100%">${ic('plus','l')}<b style="font-size:12.5px">씬 추가</b></button></div>
@@ -222,7 +222,7 @@ Pace: ${pace}${v.pauses?', with a short natural pause between sentences and a lo
 Delivery: polished, clear diction suited to a ${({'cine-dark':'cinematic brand film','clean':'clean product explainer','hud':'tech explainer','editorial':'editorial film','flat':'friendly animated explainer','product':'premium product showcase'})[p.brief.style]||'motion graphics explainer'}. Do not read stage directions.${v.extra?'\n'+v.extra:''}`}
 function viewNarr(){const p=S.proj,v=p.voice,n=p.narration;const langs=enabledLangs(p);const tl=timeline(p);
  return `<div class="wrap" style="max-width:1320px">
- <div class="page-h"><div><div class="eyebrow">STEP 03 · 나레이션</div><h2>Gemini에서 음성을 만들고, 오디오를 올려 주세요</h2><p>① 스타일 지시문과 본문을 복사해 Google AI Studio의 음성 생성(TTS)에 붙여 넣습니다. ② 만들어진 오디오를 오른쪽에 올리면 자막 줄과 씬 타이밍이 자동으로 맞춰집니다.</p></div></div>
+ <div class="page-h"><div><div class="eyebrow">STEP 03 · 나레이션</div><h2>Gemini에서 음성을 만들고, 오디오를 올리세요</h2><p>① 스타일 지시문과 본문을 복사해 Google AI Studio의 음성 생성(TTS)에 붙여 넣습니다. ② 만들어진 오디오를 오른쪽에 올리면 자막 줄과 씬 타이밍이 자동으로 맞춰집니다.</p></div></div>
  <div class="ncols">
   <section class="card sec"><div class="sec-h"><h3>① TTS 텍스트</h3><span class="muted" style="font-size:12px" data-live="ttsCount">${LIVE.ttsCount()}</span></div>
    <div class="row">${seg('p.tts.lang',langs.map(l=>[l,LANGS[l]]),p.tts.lang)}<span class="sp"></span><label class="row" style="gap:8px;font-size:12px"><span>씬 사이 빈 줄</span><button class="toggle" aria-pressed="${p.tts.sceneBreak}" data-flip="p.tts.sceneBreak" aria-label="씬 사이 빈 줄"></button></label></div>
@@ -242,7 +242,7 @@ function viewNarr(){const p=S.proj,v=p.voice,n=p.narration;const langs=enabledLa
    <p class="muted" style="font-size:12px">무음 구간을 찾아 자막 줄 수에 맞게 나눕니다. 결과가 어긋난 줄은 아래 표에서 시간을 직접 고치거나, 씬 편집 타임라인에서 경계를 끌어 조정하세요.</p>
    <div class="tbl-wrap"><table class="ltable"><thead><tr><th>#</th><th>씬</th><th>자막</th><th>시작</th><th>끝</th><th></th></tr></thead><tbody>${tl.lines.map((x,k)=>`<tr data-lid="${x.l.id}"><td class="mono muted">${k+1}</td><td class="mono" style="color:var(--accent)">${pad(x.g.i+1)}</td><td class="txt">${esc(x.l.ko)}</td><td><input type="number" step="0.01" id="ls-${x.l.id}" data-bind="L:${x.g.s.id}:${x.l.id}.start" data-num value="${x.est?'':(+x.start).toFixed(2)}" placeholder="${(+x.start).toFixed(2)}"></td><td><input type="number" step="0.01" id="le-${x.l.id}" data-bind="L:${x.g.s.id}:${x.l.id}.end" data-num value="${x.est?'':(+x.end).toFixed(2)}" placeholder="${(+x.end).toFixed(2)}"></td><td><button class="ibtn sm" data-act="playLine" data-arg="${x.start}:${x.end}" aria-label="이 줄 듣기">${ic('play','s')}</button></td></tr>`).join('')}</tbody></table></div>`
    :`<div class="drop" data-act="narrUpload" data-dropaudio style="padding:40px 18px">${ic('mic','l')}<b style="font-size:14px;color:var(--fg)">나레이션 오디오 올리기</b><span style="font-size:12px">WAV · MP3 · M4A · 14MB 이하 · 클릭하거나 끌어다 놓기</span></div>
-   <p class="muted" style="font-size:12px">오디오 없이도 다음 단계로 갈 수 있어요. 그 경우 글자 수로 예측한 길이(<b>${secs(tl.total)}</b>)로 애니마틱을 만듭니다.</p>`}
+   <p class="muted" style="font-size:12px">오디오 없이도 다음 단계로 갈 수 있습니다. 그 경우 글자 수로 예측한 길이(<b>${secs(tl.total)}</b>)로 애니마틱을 만듭니다.</p>`}
    <div class="divider"></div><div class="row" style="justify-content:flex-end"><button class="btn pri" data-act="go" data-arg="edit">씬 편집으로 ${ic('chev','s')}</button></div>
   </section></div></div>`}
 MOUNT.narr=()=>{drawWave()};

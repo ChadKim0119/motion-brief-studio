@@ -25,7 +25,7 @@ const ACT={
  home(){Player.pause();closeHistory();S.view='home';S.proj=null;S.pid=null;unsubV&&unsubV();unsubD&&unsubD();render()},
  go(el){go(el.dataset.arg)},
  open(el,e){if(e.target.closest('[data-act="delProject"]'))return;openProject(el.dataset.arg)},
- async delProject(el,e){e.stopPropagation();const id=el.dataset.arg;const m=S.projects.find(x=>x.id===id);if(await confirmBox('프로젝트를 삭제할까요?',`‘${esc(m&&m.title||'')}’와 모든 버전 기록이 삭제되며 되돌릴 수 없어요.`,'삭제')){try{await Store.delProject(id);toast('삭제했어요')}catch(err){toast(errMsg(err),{err:true})}}},
+ async delProject(el,e){e.stopPropagation();const id=el.dataset.arg;const m=S.projects.find(x=>x.id===id);if(await confirmBox('프로젝트를 삭제하시겠습니까?',`‘${esc(m&&m.title||'')}’와 모든 버전 기록이 삭제되며 되돌릴 수 없습니다.`,'삭제')){try{await Store.delProject(id);toast('프로젝트를 삭제했습니다.')}catch(err){toast(errMsg(err),{err:true})}}},
  newProject(){let dur=45,asp='16:9';const m=modal({title:'새 프로젝트',body:`<div class="field"><label for="np-t">이름</label><input class="in" id="np-t" placeholder="예: 신규 앱 온보딩 소개 영상" autofocus></div>
   <div class="field"><div class="lbl">목표 길이</div><div class="seg" id="np-d">${[15,30,45,60,90].map(x=>`<button aria-pressed="${x===45}" data-k="${x}">${x}초</button>`).join('')}</div></div>
   <div class="field"><div class="lbl">화면비</div><div class="seg" id="np-a">${ASPECTS.map(a=>`<button aria-pressed="${a[0]==='16:9'}" data-k="${a[0]}">${a[1]}</button>`).join('')}</div></div>`,foot:`<button class="btn" data-no>취소</button><button class="btn pri" data-ok>만들기</button>`});
@@ -42,14 +42,14 @@ const ACT={
  saveVersion(){saveVersionModal()},
  undo(){undo()},redo(){redo()},
  help(){openHelp()},bgm(){openBgm()},
- loadRemote(){if(!S.remoteBanner)return;S.proj=norm(S.remoteBanner);S.remoteBanner=false;S.undo.push(JSON.stringify(S.proj));refresh();renderBanner();toast('최신 내용을 불러왔어요')},
+ loadRemote(){if(!S.remoteBanner)return;S.proj=norm(S.remoteBanner);S.remoteBanner=false;S.undo.push(JSON.stringify(S.proj));refresh();renderBanner();toast('최신 내용을 불러왔습니다.')},
  dismissRemote(){S.remoteBanner=false;renderBanner()},
  style(el){const st=STYLES.find(x=>x.k===el.dataset.arg);if(!st)return;const b=S.proj.brief;b.style=st.k;b.palette=clone(st.pal);b.font=st.font;b.letterbox=st.letterbox&&b.aspect==='16:9';touch('p.brief',{structural:true})},
  aiDraft(){aiDraft()},aiReviseAll(){aiReviseAll()},aiScene(el){aiScene(el.dataset.arg)},aiTranslate(el){aiTranslate(el.dataset.arg||null)},
  addScene(){const p=S.proj;const at=S.view==='edit'?S.sel+1:p.scenes.length;const s=newScene();const prev=p.scenes[at-1];if(prev){s.dir=clone(prev.dir)}p.scenes.splice(at,0,s);if(p.scenes.some(x=>x.start!=null)&&prev){const e=prev.end??timeline(p).total;s.start=e;s.end=e+3;p.scenes.slice(at+1).forEach(x=>{if(x.start!=null){x.start+=3;x.end+=3}})}S.sel=at;touch('scenes',{structural:true});if(S.view==='script')setTimeout(()=>{const t=$(`#tx-${s.id}-ko`);t&&t.focus();t&&t.scrollIntoView({block:'center',behavior:'smooth'})},50)},
- dupScene(el){const p=S.proj;const i=p.scenes.findIndex(s=>s.id===el.dataset.arg);if(i<0)return;const c=clone(p.scenes[i]);c.id=uid('s');c.lines.forEach(l=>l.id=uid('l'));c.refs.forEach(r=>r.id=uid('r'));c.notes=[];c.locked=false;if(c.start!=null){const d=c.end-c.start;p.scenes.slice(i+1).forEach(x=>{if(x.start!=null){x.start+=d;x.end+=d}});c.start=p.scenes[i].end;c.end=c.start+d}p.scenes.splice(i+1,0,c);S.sel=i+1;touch('scenes',{structural:true});toast('씬을 복제했어요')},
- async delScene(el){const p=S.proj;if(p.scenes.length<2)return toast('씬이 하나뿐이라 지울 수 없어요');const i=p.scenes.findIndex(s=>s.id===el.dataset.arg);const s=p.scenes[i];const has=s.lines.some(l=>l.ko.trim())||s.intent||s.still;
-  if(has&&!(await confirmBox(`씬 ${i+1}을 삭제할까요?`,'되돌리기(⌘Z)나 버전 기록으로 복구할 수 있어요.','삭제')))return;if(s.start!=null&&p.scenes[i-1])p.scenes[i-1].end=s.end;else if(s.start!=null&&p.scenes[i+1])p.scenes[i+1].start=s.start;p.scenes.splice(i,1);S.sel=clamp(S.sel,0,p.scenes.length-1);touch('scenes',{structural:true})},
+ dupScene(el){const p=S.proj;const i=p.scenes.findIndex(s=>s.id===el.dataset.arg);if(i<0)return;const c=clone(p.scenes[i]);c.id=uid('s');c.lines.forEach(l=>l.id=uid('l'));c.refs.forEach(r=>r.id=uid('r'));c.notes=[];c.locked=false;if(c.start!=null){const d=c.end-c.start;p.scenes.slice(i+1).forEach(x=>{if(x.start!=null){x.start+=d;x.end+=d}});c.start=p.scenes[i].end;c.end=c.start+d}p.scenes.splice(i+1,0,c);S.sel=i+1;touch('scenes',{structural:true});toast('씬을 복제했습니다.')},
+ async delScene(el){const p=S.proj;if(p.scenes.length<2)return toast('씬이 하나뿐이라 삭제할 수 없습니다.');const i=p.scenes.findIndex(s=>s.id===el.dataset.arg);const s=p.scenes[i];const has=s.lines.some(l=>l.ko.trim())||s.intent||s.still;
+  if(has&&!(await confirmBox(`씬 ${i+1}을 삭제하시겠습니까?`,'되돌리기(⌘Z)나 버전 기록으로 복구할 수 있습니다.','삭제')))return;if(s.start!=null&&p.scenes[i-1])p.scenes[i-1].end=s.end;else if(s.start!=null&&p.scenes[i+1])p.scenes[i+1].start=s.start;p.scenes.splice(i,1);S.sel=clamp(S.sel,0,p.scenes.length-1);touch('scenes',{structural:true})},
  moveScene(el){const [id,d]=el.dataset.arg.split(':');const p=S.proj;const i=p.scenes.findIndex(s=>s.id===id);const j=i+(+d);if(j<0||j>=p.scenes.length)return;moveSceneTo(i,j)},
  sel(el){selectScene(+el.dataset.arg)},
  tab(el){S.tab=el.dataset.arg;renderInspector()},
@@ -57,11 +57,11 @@ const ACT={
  play(){Player.toggle()},
  seek(el){S.t=+el.dataset.arg;Player.seek(S.t)},
  guides(){S.guides=!S.guides;renderPTool();Player.redrawAll()},
- fullscreen(){const c=$('#cwrap');if(c&&c.requestFullscreen)c.requestFullscreen().catch(()=>toast('전체 화면을 열 수 없어요',{err:true}))},
+ fullscreen(){const c=$('#cwrap');if(c&&c.requestFullscreen)c.requestFullscreen().catch(()=>toast('전체 화면을 열 수 없습니다.',{err:true}))},
  addLine(){const s=cur();s.lines.push(newLine());touch('s.lines',{structural:true});setTimeout(()=>{const l=s.lines[s.lines.length-1];const t=$(`#lt-${l.id}-ko`);t&&t.focus()},30)},
  delLine(el){const s=cur();if(s.lines.length<2){s.lines[0]={...s.lines[0],ko:'',ja:'',en:''}}else s.lines=s.lines.filter(l=>l.id!==el.dataset.arg);touch('s.lines',{structural:true})},
- mood(el){const m=SCENE_MOODS.find(x=>x.k===el.dataset.arg);const s=cur();s.dir={...s.dir,...clone(m.set)};if(m.hit)s.bgmHit=true;touch('s.dir',{structural:true});toast(`‘${m.n}’ 적용 · ⌘Z로 되돌리기`)},
- addNote(){const t=$('#newnote');const v=t&&t.value.trim();if(!v)return toast('지시 내용을 적어 주세요');cur().notes.push({id:uid('n'),text:v,done:false,at:Date.now(),by:S.me.name||''});t.value='';touch('s.notes',{structural:true})},
+ mood(el){const m=SCENE_MOODS.find(x=>x.k===el.dataset.arg);const s=cur();s.dir={...s.dir,...clone(m.set)};if(m.hit)s.bgmHit=true;touch('s.dir',{structural:true});toast(`‘${m.n}’을 적용했습니다. ⌘Z로 되돌릴 수 있습니다.`)},
+ addNote(){const t=$('#newnote');const v=t&&t.value.trim();if(!v)return toast('지시 내용을 입력하세요.');cur().notes.push({id:uid('n'),text:v,done:false,at:Date.now(),by:S.me.name||''});t.value='';touch('s.notes',{structural:true})},
  noteDone(el){const n=cur().notes.find(x=>x.id===el.dataset.arg);if(n){n.done=el.checked;touch('s.notes',{structural:true})}},
  delNote(el){const s=cur();s.notes=s.notes.filter(x=>x.id!==el.dataset.arg);touch('s.notes',{structural:true})},
  async stillUpload(){const f=await pickFile('image/png,image/jpeg,image/webp,image/gif');if(f)setStill(f)},
@@ -71,16 +71,16 @@ const ACT={
   m.querySelector('[data-no]').onclick=()=>m.close();m.querySelector('[data-ok]').onclick=()=>{let u=$('#rl-u').value.trim();if(!u)return;if(!/^https?:\/\//.test(u))u='https://'+u;refList(scope).push({id:uid('r'),kind:'link',url:u,title:u.replace(/^https?:\/\/(www\.)?/,'').split('/')[0],note:$('#rl-n').value.trim(),at:Date.now()});m.close();touch('refs',{structural:true})}},
  addRefNote(el){refList(el.dataset.arg).push({id:uid('r'),kind:'note',title:'메모',note:'',at:Date.now()});touch('refs',{structural:true})},
  delRef(el){const [scope,id]=el.dataset.arg.split(':');const l=refList(scope);const i=l.findIndex(r=>r.id===id);if(i>=0)l.splice(i,1);touch('refs',{structural:true})},
- copyStyle(){copyText(styleInstruction(S.proj),'스타일 지시문을 복사했어요')},
- copyTts(){copyText(ttsBody(S.proj,S.proj.tts.lang,S.proj.tts.sceneBreak),'나레이션 본문을 복사했어요')},
+ copyStyle(){copyText(styleInstruction(S.proj),'스타일 지시문을 복사했습니다.')},
+ copyTts(){copyText(ttsBody(S.proj,S.proj.tts.lang,S.proj.tts.sceneBreak),'나레이션 본문을 복사했습니다.')},
  dlTts(){saveFile(`${slug(S.proj.title)}_narration_${S.proj.tts.lang}.txt`,ttsBody(S.proj,S.proj.tts.lang,S.proj.tts.sceneBreak))},
  async narrUpload(){const f=await pickFile('audio/*,.wav,.mp3,.m4a,.aac');if(f)setNarration(f)},
- async narrRemove(){if(!(await confirmBox('나레이션 오디오를 제거할까요?','자막·씬 타이밍은 글자 수 기준 예상치로 돌아갑니다.','제거')))return;const p=S.proj;p.narration=null;p.scenes.forEach(s=>{s.start=s.end=null;s.lines.forEach(l=>{l.start=l.end=null})});touch('narration',{structural:true})},
+ async narrRemove(){if(!(await confirmBox('나레이션 오디오를 제거하시겠습니까?','자막·씬 타이밍은 글자 수 기준 예상치로 돌아갑니다.','제거')))return;const p=S.proj;p.narration=null;p.scenes.forEach(s=>{s.start=s.end=null;s.lines.forEach(l=>{l.start=l.end=null})});touch('narration',{structural:true})},
  narrPlay(el){previewAudio(0,null,el)},
  playLine(el){const [a,b]=el.dataset.arg.split(':').map(Number);previewAudio(a,b,el)},
  align(){alignNarration()},
- copyBrief(){copyText(buildBrief(S.proj),'제작 안내서를 복사했어요')},
- copyRequest(){copyText(claudeRequest(S.proj),'Claude 요청문을 복사했어요')},
+ copyBrief(){copyText(buildBrief(S.proj),'제작 안내서를 복사했습니다.')},
+ copyRequest(){copyText(claudeRequest(S.proj),'Claude 요청문을 복사했습니다.')},
  dlBrief(){saveFile(`${slug(S.proj.title)}_${S.versions[0]?'v'+S.versions[0].n:'draft'}_brief.md`,buildBrief(S.proj))},
  dlJson(){saveFile(`${slug(S.proj.title)}_project.json`,JSON.stringify({format:'motion-brief/1',project:stripForExport(S.proj)},null,1))},
  dlZip(){buildZip()},
@@ -92,7 +92,7 @@ const ACT={
  record(){Rec.start()},
  recMonitor(el){Rec.monitor=!Rec.monitor;el.setAttribute('aria-pressed',String(Rec.monitor))},
  recSave(){if(Rec.lastBlob)saveFile(`${slug(S.proj.title)}_animatic.${Rec.lastMime==='video/mp4'?'mp4':'webm'}`,Rec.lastBlob)},
- async recAttach(){if(!Rec.lastBlob)return;try{toast('업로드 중…');const id=await Store.upload(Rec.lastBlob,Rec.lastMime);S.proj.renders.push({id:uid('r'),kind:'animatic',assetId:id,at:Date.now(),source:{kind:'user'},v:(S.versions[0]?S.versions[0].n:0)+1});await commitVersion({label:'애니마틱',note:'애니마틱 MP4 녹화',attach:{video:id,kind:'animatic'},source:{kind:'user'}});refresh()}catch(e){toast(errMsg(e),{err:true})}},
+ async recAttach(){if(!Rec.lastBlob)return;try{toast('업로드하는 중입니다.');const id=await Store.upload(Rec.lastBlob,Rec.lastMime);S.proj.renders.push({id:uid('r'),kind:'animatic',assetId:id,at:Date.now(),source:{kind:'user'},v:(S.versions[0]?S.versions[0].n:0)+1});await commitVersion({label:'애니마틱',note:'애니마틱 MP4 녹화',attach:{video:id,kind:'animatic'},source:{kind:'user'}});refresh()}catch(e){toast(errMsg(e),{err:true})}},
  async finalUpload(){const f=await pickFile('video/mp4,video/webm');if(f)registerFinal(f)},
  finalLink(){const m=modal({title:'최종 결과물 링크 등록',body:`<div class="field"><label for="fl-u">링크</label><input class="in" id="fl-u" placeholder="https://drive.google.com/… 또는 GitHub 릴리스" autofocus></div><div class="field"><label for="fl-n">메모</label><input class="in" id="fl-n" placeholder="예: v12 기준 최종 렌더, BGM 교체"></div>${srcPicker('code')}`,foot:`<button class="btn" data-no>취소</button><button class="btn pri" data-ok>등록</button>`});
   m.querySelector('[data-no]').onclick=()=>m.close();m.querySelector('[data-ok]').onclick=async()=>{let u=$('#fl-u').value.trim();if(!u)return;if(!/^https?:\/\//.test(u))u='https://'+u;const source=readSrcPicker(m);m.close();S.proj.renders.push({id:uid('r'),kind:'final',url:u,at:Date.now(),source,note:$('#fl-n')?.value||'',v:(S.versions[0]?S.versions[0].n:0)+1});await commitVersion({label:'최종 결과물',note:u,attach:{link:u,kind:'final'},source});refresh()}},
@@ -100,24 +100,24 @@ const ACT={
  bgmPlay(){bgmToggleSketch()},tap(){tapTempo()},
  async bgmUpload(){const f=await pickFile('audio/*,.mp3,.m4a,.wav');if(f)setBgmFile(f)},
  bgmRemove(){S.proj.bgm.assetId=null;S.proj.bgm.name='';touch('p.bgm',{structural:true})},
- copyBgmKo(){copyText(bgmBriefKo(S.proj))},copyBgmEn(){copyText(bgmPromptEn(S.proj),'EN 프롬프트를 복사했어요')},
+ copyBgmKo(){copyText(bgmBriefKo(S.proj))},copyBgmEn(){copyText(bgmPromptEn(S.proj),'EN 프롬프트를 복사했습니다.')},
 };
 function srcPicker(def){return `<div class="field"><div class="lbl">출처 태그</div><div class="chips" data-srcpick="${def}">${Object.entries(SRC).map(([k,x])=>`<button type="button" class="chip" aria-pressed="${k===def}" data-k="${k}" onclick="this.parentNode.dataset.srcpick='${k}';[...this.parentNode.children].forEach(c=>c.setAttribute('aria-pressed',String(c===this)))">${x.n}</button>`).join('')}</div><input class="in" data-srcagent placeholder="에이전트 · 참조 (선택, 예: Claude Code · repo@a1b2c3)"></div>`}
 function readSrcPicker(m){const k=m.querySelector('[data-srcpick]').dataset.srcpick;const a=(m.querySelector('[data-srcagent]').value||'').trim();const [agent,ref]=a.split('·').map(x=>x&&x.trim());return {kind:k,agent:agent||'',ref:ref||''}}
-async function registerFinal(f){if(f.size>20*1048576){toast('20MB가 넘어요. 링크로 등록해 주세요.',{err:true});return ACT.finalLink()}
+async function registerFinal(f){if(f.size>20*1048576){toast('20MB를 넘는 파일은 업로드할 수 없습니다. 링크로 등록하세요.',{err:true});return ACT.finalLink()}
  const m=modal({title:'최종 영상 등록',body:`<p><b>${esc(f.name)}</b> <span class="muted">${(f.size/1048576).toFixed(1)}MB</span></p><div class="field"><label for="fv-n">변경 메모</label><input class="in" id="fv-n" placeholder="예: Claude Code 렌더 · GX 컷 교체" autofocus></div>${srcPicker('code')}`,foot:`<button class="btn" data-no>취소</button><button class="btn pri" data-ok>${ic('upload','s')}업로드 · 버전 기록</button>`});
- m.querySelector('[data-no]').onclick=()=>m.close();m.querySelector('[data-ok]').onclick=async()=>{const source=readSrcPicker(m);const note=$('#fv-n').value.trim();m.close();toast('업로드 중…');try{const id=await Store.upload(f,f.type||'video/mp4');S.proj.renders.push({id:uid('r'),kind:'final',assetId:id,at:Date.now(),source,note,v:(S.versions[0]?S.versions[0].n:0)+1});await commitVersion({label:'최종 영상',note:note||f.name,attach:{video:id,kind:'final'},source});refresh()}catch(e){toast(errMsg(e),{err:true})}}}
+ m.querySelector('[data-no]').onclick=()=>m.close();m.querySelector('[data-ok]').onclick=async()=>{const source=readSrcPicker(m);const note=$('#fv-n').value.trim();m.close();toast('업로드하는 중입니다.');try{const id=await Store.upload(f,f.type||'video/mp4');S.proj.renders.push({id:uid('r'),kind:'final',assetId:id,at:Date.now(),source,note,v:(S.versions[0]?S.versions[0].n:0)+1});await commitVersion({label:'최종 영상',note:note||f.name,attach:{video:id,kind:'final'},source});refresh()}catch(e){toast(errMsg(e),{err:true})}}}
 const refList=scope=>scope==='p'?S.proj.refs:S.proj.scenes.find(s=>s.id===scope).refs;
-async function addRefs(scope,files){let n=0;for(const f of files){const kind=f.type.startsWith('image/')?'image':(f.type==='video/mp4'||f.type==='video/webm')?'video':null;if(!kind){toast(`${f.name}: 이미지나 MP4/WebM만 올릴 수 있어요`,{err:true});continue}
-  try{toast(`${f.name} 업로드 중…`,{ms:1500});const id=await Store.upload(f,f.type);refList(scope).push({id:uid('r'),kind,assetId:id,title:f.name.replace(/\.[^.]+$/,''),note:'',name:f.name,mime:f.type,at:Date.now()});n++}catch(e){toast(`${f.name}: ${errMsg(e)}`,{err:true})}}
- if(n){touch('refs',{structural:true});toast(`레퍼런스 ${n}개 추가`)}}
-async function setStill(f){if(!f.type.startsWith('image/'))return toast('이미지 파일만 쓸 수 있어요',{err:true});const s=cur();try{toast('업로드 중…',{ms:1200});const id=await Store.upload(f,f.type);s.still={assetId:id,fx:.5,fy:.5,name:f.name,mime:f.type};touch('s.still',{structural:true})}catch(e){toast(errMsg(e),{err:true})}}
-async function setBgmFile(f){try{toast('업로드 중…',{ms:1500});const id=await uploadAudio(f);S.proj.bgm.assetId=id;S.proj.bgm.name=f.name;S.proj.bgm.source='upload';touch('p.bgm',{structural:true})}catch(e){toast(errMsg(e),{err:true})}}
+async function addRefs(scope,files){let n=0;for(const f of files){const kind=f.type.startsWith('image/')?'image':(f.type==='video/mp4'||f.type==='video/webm')?'video':null;if(!kind){toast(`${f.name}: 이미지나 MP4·WebM만 올릴 수 있습니다.`,{err:true});continue}
+  try{toast(`${f.name} 업로드하는 중입니다.`,{ms:1500});const id=await Store.upload(f,f.type);refList(scope).push({id:uid('r'),kind,assetId:id,title:f.name.replace(/\.[^.]+$/,''),note:'',name:f.name,mime:f.type,at:Date.now()});n++}catch(e){toast(`${f.name}: ${errMsg(e)}`,{err:true})}}
+ if(n){touch('refs',{structural:true});toast(`레퍼런스 ${n}개를 추가했습니다.`)}}
+async function setStill(f){if(!f.type.startsWith('image/'))return toast('이미지 파일만 쓸 수 있습니다.',{err:true});const s=cur();try{toast('업로드하는 중입니다.',{ms:1200});const id=await Store.upload(f,f.type);s.still={assetId:id,fx:.5,fy:.5,name:f.name,mime:f.type};touch('s.still',{structural:true})}catch(e){toast(errMsg(e),{err:true})}}
+async function setBgmFile(f){try{toast('업로드하는 중입니다.',{ms:1500});const id=await uploadAudio(f);S.proj.bgm.assetId=id;S.proj.bgm.name=f.name;S.proj.bgm.source='upload';touch('p.bgm',{structural:true})}catch(e){toast(errMsg(e),{err:true})}}
 function moveSceneTo(i,j){const p=S.proj;const timed=p.scenes.every(s=>s.start!=null);const [s]=p.scenes.splice(i,1);p.scenes.splice(j,0,s);if(timed){let t=0;p.scenes.forEach(x=>{const d=x.end-x.start;x.start=t;x.end=t+d;t+=d})}S.sel=j;touch('scenes',{structural:true})}
 function peaksOf(buf,n=1200){const ch=buf.getChannelData(0);const step=Math.max(1,Math.floor(ch.length/n));const out=[];let mx=0;for(let i=0;i<n;i++){let m=0;const a=i*step,b=Math.min(ch.length,a+step);for(let k=a;k<b;k+=4){const v=Math.abs(ch[k]);if(v>m)m=v}out.push(m);if(m>mx)mx=m}return out.map(v=>+(v/(mx||1)).toFixed(3))}
-async function setNarration(f){if(!/audio|\.wav$|\.mp3$|\.m4a$|\.aac$/i.test(f.type+f.name))return toast('오디오 파일만 올릴 수 있어요',{err:true});
- try{toast('오디오를 올리는 중…',{ms:2000});const id=await uploadAudio(f);const buf=await audioBuffer(id);S.proj.narration={assetId:id,name:f.name,mime:f.type||'audio/wav',duration:+buf.duration.toFixed(3),peaks:peaksOf(buf)};
-  touch('narration',{structural:true});toast('오디오를 올렸어요. 자막 타이밍을 맞출까요?',{action:'자동 맞춤',onAction:alignNarration,ms:9000})}catch(e){toast(errMsg(e),{err:true})}}
+async function setNarration(f){if(!/audio|\.wav$|\.mp3$|\.m4a$|\.aac$/i.test(f.type+f.name))return toast('오디오 파일만 올릴 수 있습니다.',{err:true});
+ try{toast('오디오를 올리는 중입니다.',{ms:2000});const id=await uploadAudio(f);const buf=await audioBuffer(id);S.proj.narration={assetId:id,name:f.name,mime:f.type||'audio/wav',duration:+buf.duration.toFixed(3),peaks:peaksOf(buf)};
+  touch('narration',{structural:true});toast('오디오를 올렸습니다.',{action:'자동 맞춤',onAction:alignNarration,ms:9000})}catch(e){toast(errMsg(e),{err:true})}}
 let prevHolder=null;
 async function previewAudio(a,b,el){const n=S.proj.narration;if(!n)return;if(prevHolder){try{prevHolder.stop()}catch(e){}prevHolder=null;return}const ctx=actx();await ctx.resume();const buf=await audioBuffer(n.assetId);const s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);s.start(0,a,b?Math.max(.05,b-a+.15):undefined);prevHolder=s;s.onended=()=>{if(prevHolder===s)prevHolder=null}}
 function detectGaps(buf){const ch=buf.getChannelData(0);const sr=buf.sampleRate;const hop=Math.round(sr*.01);const n=Math.floor(ch.length/hop);const rms=new Float32Array(n);
@@ -126,8 +126,8 @@ function detectGaps(buf){const ch=buf.getChannelData(0);const sr=buf.sampleRate;
  const sil=Array.from(rms,v=>v<thr);let ss=sil.indexOf(false),se=sil.lastIndexOf(false);if(ss<0){ss=0;se=n-1}
  const gaps=[];let i=ss;while(i<=se){if(sil[i]){let j=i;while(j<=se&&sil[j])j++;const len=(j-i)*.01;if(len>=.12)gaps.push({s:i*.01,e:j*.01,c:(i+j)/2*.01,len});i=j}else i++}
  return {gaps,ss:ss*.01,se:(se+1)*.01}}
-async function alignNarration(){const p=S.proj;if(!p.narration)return toast('먼저 나레이션 오디오를 올려 주세요');let buf;try{buf=await audioBuffer(p.narration.assetId)}catch(e){return toast('오디오를 읽지 못했어요',{err:true})}
- const items=[];p.scenes.forEach((s,si)=>s.lines.forEach(l=>{if(l.ko.trim())items.push({s,si,l,ch:Math.max(1,nonspace(l.ko))})}));const N=items.length;if(!N)return toast('나레이션 줄이 없어요');
+async function alignNarration(){const p=S.proj;if(!p.narration)return toast('먼저 나레이션 오디오를 올리세요');let buf;try{buf=await audioBuffer(p.narration.assetId)}catch(e){return toast('오디오를 읽지 못했습니다. 파일을 다시 올리세요.',{err:true})}
+ const items=[];p.scenes.forEach((s,si)=>s.lines.forEach(l=>{if(l.ko.trim())items.push({s,si,l,ch:Math.max(1,nonspace(l.ko))})}));const N=items.length;if(!N)return toast('나레이션 줄이 없습니다. 스크립트를 먼저 입력하세요.');
  const {gaps,ss,se}=detectGaps(buf);const K=N-1,G=gaps.length;const span=Math.max(.1,se-ss);const tot=items.reduce((a,x)=>a+x.ch,0);let cum=0;const exp=items.slice(0,-1).map(x=>{cum+=x.ch;return ss+span*cum/tot});
  let cuts=[];
  if(K>0&&G>=K){const cost=(k,j)=>Math.abs(gaps[j].c-exp[k])/span*6-Math.min(gaps[j].len,1.2)*1.4-(items[k].si!==items[k+1].si?Math.min(gaps[j].len,1.2)*.8:0);
@@ -135,14 +135,14 @@ async function alignNarration(){const p=S.proj;if(!p.narration)return toast('먼
   for(let j=0;j<G;j++)if(G-1-j>=K-1)dp[0][j]=cost(0,j);
   for(let k=1;k<K;k++){let best=INF,bi=-1;for(let j=k;j<G-(K-1-k);j++){const pv=dp[k-1][j-1];if(pv<best){best=pv;bi=j-1}if(bi>=0){dp[k][j]=best+cost(k,j);bk[k][j]=bi}}}
   let j=-1,b=INF;for(let x=0;x<G;x++)if(dp[K-1][x]<b){b=dp[K-1][x];j=x}for(let k=K-1;k>=0;k--){cuts[k]=gaps[j];j=bk[k][j]}}
- else if(K>0){cuts=exp.map(e=>({s:e-.05,e:e+.05,c:e}));toast('무음 구간이 부족해 글자 수 비율로 나눴어요. 표에서 확인해 주세요.',{ms:6000})}
+ else if(K>0){cuts=exp.map(e=>({s:e-.05,e:e+.05,c:e}));toast('무음 구간이 부족해 글자 수 비율로 나눴습니다. 표에서 확인하세요.',{ms:6000})}
  items.forEach((x,k)=>{x.l.start=+(k?cuts[k-1].e-.04:Math.max(0,ss-.05)).toFixed(3);x.l.end=+(k<K?cuts[k].s+.06:Math.min(buf.duration,se+.05)).toFixed(3)});
  p.scenes.forEach(s=>s.lines.forEach(l=>{if(!l.ko.trim()){l.start=null;l.end=null}}));
  const tail=p.tail??2.5;const firsts=p.scenes.map(s=>s.lines.find(l=>l.ko.trim()&&l.start!=null));const lasts=p.scenes.map(s=>[...s.lines].reverse().find(l=>l.ko.trim()&&l.end!=null));
  let t=0;p.scenes.forEach((s,i)=>{s.start=+t.toFixed(3);let e;const nf=firsts.slice(i+1).find(Boolean);const lf=lasts[i];
   if(i===p.scenes.length-1)e=Math.max(buf.duration,lf?lf.end:0)+tail;else if(lf&&nf)e=(lf.end+nf.start)/2;else if(nf)e=Math.max(t+2.5,nf.start-.4);else e=t+3;
   s.end=+Math.max(t+.8,e).toFixed(3);t=s.end});
- touch('timing',{structural:true});toast(`${N}줄 · ${p.scenes.length}개 씬 타이밍을 맞췄어요`,{action:'버전 저장',onAction:()=>commitVersion({label:'타이밍 자동 맞춤',note:`${N}줄 정렬`,source:{kind:'user'}})})}
+ touch('timing',{structural:true});toast(`${N}줄 · ${p.scenes.length}개 씬 타이밍을 맞췄습니다.`,{action:'버전 저장',onAction:()=>commitVersion({label:'타이밍 자동 맞춤',note:`${N}줄 정렬`,source:{kind:'user'}})})}
 
 /* ================= events ================= */
 document.addEventListener('click',e=>{
@@ -194,7 +194,7 @@ const _origRefresh=refresh;refresh=function(){_origRefresh();if(S.view==='edit')
 
 /* ================= boot ================= */
 (async function boot(){
- const fav=document.createElement('link');fav.rel='icon';fav.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#141821"/><path d="M10 9l12 7-12 7z" fill="#fff"/><path d="M25 4.5l2.5 2.5-2.5 2.5-2.5-2.5z" fill="#F5B829"/></svg>');document.head.appendChild(fav);
+ const fav=document.createElement('link');fav.rel='icon';fav.href='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#16365D"/><path d="M10 9l12 7-12 7z" fill="#fff"/><path d="M25 4.5l2.5 2.5-2.5 2.5-2.5-2.5z" fill="#87D0DF"/></svg>');document.head.appendChild(fav);
  render();$('#main').innerHTML=`<div class="view"><div class="wrap"><div class="empty" style="border:0"><span class="spin"></span><span>프로젝트를 불러오는 중…</span></div></div></div>`;
  await Store.init();
  let first=true;Store.subProjects(list=>{S.projects=list;if(S.view==='home'&&!first)renderMain();if(first){first=false;renderMain()}});

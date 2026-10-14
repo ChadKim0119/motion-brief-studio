@@ -24,9 +24,9 @@ function buildBrief(p){const tl=timeline(p);const [w,h]=aspectWH(p.brief.aspect)
  if(b.notes)L.push('**제작 메모**','',b.notes,'');
  L.push('## 2. 사운드','','### 나레이션','',`- 오디오: ${files.narration?`\`${files.narration.path}\` (${p.narration.duration.toFixed(2)}초, 원본 ${p.narration.name})`:'없음 (TTS 생성 전)'}`,`- 보이스: ${p.voice.gender} · ${p.voice.age} · ${p.voice.tones.join(', ')} · ${p.voice.pace}${p.voice.voiceName?' · Gemini '+p.voice.voiceName:''}`,'','```text',styleInstruction(p),'```','','### BGM 브리프','','```text',bgmBriefKo(p),'```','','음원 생성·검색 프롬프트 (EN):','','```text',bgmPromptEn(p),'```','');
  L.push('## 3. 씬 구성','','| # | 시간 | 길이 | 챕터 | 제목 | 카메라 | 전환 | 에너지 | 상태 |','|---|---|---|---|---|---|---|---|---|');
- tl.segs.forEach(g=>{const s=g.s;L.push(`| ${pad(g.i+1)} | ${mmss(g.start)}–${mmss(g.end)} | ${(g.end-g.start).toFixed(1)}s | ${s.chapter||''} | ${s.title||''}${s.locked?' 🔒':''} | ${nameOf(CAMERAS,s.dir.camera)} | ${g.i===tl.segs.length-1?'엔딩':nameOf(TRANS,s.dir.transition)} | ${s.dir.energy}/5 | ${nameOf(STATUS,s.status)} |`)});
+ tl.segs.forEach(g=>{const s=g.s;L.push(`| ${pad(g.i+1)} | ${mmss(g.start)}–${mmss(g.end)} | ${(g.end-g.start).toFixed(1)}s | ${s.chapter||''} | ${s.title||''}${s.locked?' (잠김)':''} | ${nameOf(CAMERAS,s.dir.camera)} | ${g.i===tl.segs.length-1?'엔딩':nameOf(TRANS,s.dir.transition)} | ${s.dir.energy}/5 | ${nameOf(STATUS,s.status)} |`)});
  L.push('','## 4. 씬 상세','');
- tl.segs.forEach(g=>{const s=g.s,d=s.dir;L.push(`### 씬 ${pad(g.i+1)} · ${s.title||'(제목 없음)'}${s.locked?' 🔒 잠김':''}`,'',`- 시간: ${g.start.toFixed(2)}s → ${g.end.toFixed(2)}s (${(g.end-g.start).toFixed(2)}s)${s.chapter?` · 챕터 라벨 \`${s.chapter}\``:''}`,`- 제작 의도: ${s.intent||'-'}`,`- 화면 구성: ${s.visual||'-'}`,`- 화면 텍스트: ${s.onscreen.headline?`“${s.onscreen.headline.replace(/\n/g,' / ')}”`:'-'}${s.onscreen.sub?` · 서브 “${s.onscreen.sub}”`:''} · 위치 ${nameOf(POSITIONS,s.onscreen.position)}`,
+ tl.segs.forEach(g=>{const s=g.s,d=s.dir;L.push(`### 씬 ${pad(g.i+1)} · ${s.title||'(제목 없음)'}${s.locked?' (잠김)':''}`,'',`- 시간: ${g.start.toFixed(2)}s → ${g.end.toFixed(2)}s (${(g.end-g.start).toFixed(2)}s)${s.chapter?` · 챕터 라벨 \`${s.chapter}\``:''}`,`- 제작 의도: ${s.intent||'-'}`,`- 화면 구성: ${s.visual||'-'}`,`- 화면 텍스트: ${s.onscreen.headline?`“${s.onscreen.headline.replace(/\n/g,' / ')}”`:'-'}${s.onscreen.sub?` · 서브 “${s.onscreen.sub}”`:''} · 위치 ${nameOf(POSITIONS,s.onscreen.position)}`,
   `- 연출: 카메라 ${nameOf(CAMERAS,d.camera)} · 텍스트 ${nameOf(TEXTANIM,d.textAnim)} · 효과 ${d.effects.map(e=>nameOf(EFFECTS,e)).join(', ')||'없음'} · 톤 ${['아주 어둡게','어둡게','기본','밝게','아주 밝게'][d.tone+2]} · 페이싱 ${d.pace}/5 · 에너지 ${d.energy}/5 · 강조색 ${d.accent}`,
   `- 전환: ${g.i===tl.segs.length-1?'엔딩 (화면 유지 후 페이드)':nameOf(TRANS,d.transition)+' → 다음 씬'}${s.bgmHit?' · 시작 시 BGM 임팩트':''}`,`- 스틸: ${files.stills[s.id]?'`'+files.stills[s.id].path+'` (중심점 '+(s.still.fx??.5).toFixed(2)+', '+(s.still.fy??.5).toFixed(2)+')':'없음 — 화면 구성 설명대로 제작'}`);
   if(s.refs.length)L.push(`- 레퍼런스: ${s.refs.map(r=>`${r.title||r.kind}${files.refs[r.id]?` (\`${files.refs[r.id].path}\`)`:r.url?` (${r.url})`:''}${r.note?' — '+r.note:''}`).join(' / ')}`);
@@ -105,7 +105,7 @@ function drawThumb(ctx,W,H,p){const th=p.thumb,pal=p.brief.palette;const F=fontS
 /* ---------- recorder ---------- */
 const Rec={running:false,monitor:true,lastUrl:null,lastBlob:null,lastMime:'',
  pickMime(){const c=['video/mp4;codecs="avc1.640028,mp4a.40.2"','video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];return c.find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||''},
- async start(){if(this.running)return this.stop();const cv=$('#reccv');if(!cv)return;if(!window.MediaRecorder||!cv.captureStream){toast('이 브라우저는 영상 녹화를 지원하지 않아요. Chrome 최신 버전을 써 주세요.',{err:true});return}
+ async start(){if(this.running)return this.stop();const cv=$('#reccv');if(!cv)return;if(!window.MediaRecorder||!cv.captureStream){toast('이 브라우저는 영상 녹화를 지원하지 않습니다. 최신 Chrome에서 다시 시도하세요.',{err:true});return}
   Player.pause();const p=S.proj;const tl=timeline(p);const ctx=actx();try{await ctx.resume()}catch(e){}
   if(p.narration)await audioBuffer(p.narration.assetId).catch(()=>null);
   const dest=ctx.createMediaStreamDestination();const out=ctx.createGain();out.connect(dest);if(this.monitor)out.connect(ctx.destination);
@@ -115,7 +115,7 @@ const Rec={running:false,monitor:true,lastUrl:null,lastBlob:null,lastMime:'',
   const c2=cv.getContext('2d');drawFrame(c2,cv.width,cv.height,p,0,{subs:p.subs.show,lang:p.subs.lang,second:p.subs.second,tl});
   mr.start(250);const t0=ctx.currentTime+.25;await startAudio(ctx,out,p,tl,0,t0,this.holder);
   const done=new Promise(r=>mr.onstop=r);
-  const loop=()=>{if(!this.running)return;const t=Math.max(0,ctx.currentTime-t0);drawFrame(c2,cv.width,cv.height,p,Math.min(t,tl.total),{subs:p.subs.show,lang:p.subs.lang,second:p.subs.second,tl});const pr=$('#recprog');if(pr)pr.style.width=(t/tl.total*100).toFixed(1)+'%';const m=$('#recmsg');if(m)m.textContent=`녹화 중 ${tc(t,fps)} / ${tc(tl.total,fps)} · 탭을 바꾸면 끊길 수 있어요`;
+  const loop=()=>{if(!this.running)return;const t=Math.max(0,ctx.currentTime-t0);drawFrame(c2,cv.width,cv.height,p,Math.min(t,tl.total),{subs:p.subs.show,lang:p.subs.lang,second:p.subs.second,tl});const pr=$('#recprog');if(pr)pr.style.width=(t/tl.total*100).toFixed(1)+'%';const m=$('#recmsg');if(m)m.textContent=`녹화 중 ${tc(t,fps)} / ${tc(tl.total,fps)} · 탭을 바꾸면 끊길 수 있습니다`;
    if(t>=tl.total+.15){this.finish()}else requestAnimationFrame(loop)};this.mr=mr;loop();
   await done;stopAudio(this.holder);try{out.disconnect()}catch(e){}
   const type=(mime||'video/webm').split(';')[0];const blob=new Blob(chunks,{type});if(this.lastUrl)URL.revokeObjectURL(this.lastUrl);this.lastBlob=blob;this.lastMime=type;this.lastUrl=URL.createObjectURL(blob);this.running=false;
@@ -123,15 +123,15 @@ const Rec={running:false,monitor:true,lastUrl:null,lastBlob:null,lastMime:'',
  finish(){if(this.mr&&this.mr.state!=='inactive'){this.running=false;this.mr.stop()}},
  stop(){this.finish()}};
 function showRecOut(){const o=$('#recout');if(!o||!Rec.lastUrl)return;const ext=Rec.lastMime==='video/mp4'?'mp4':'webm';
- o.innerHTML=`<div class="divider"></div><div class="row"><video src="${Rec.lastUrl}" controls style="width:200px;border-radius:8px;background:#000"></video><div style="flex:1;min-width:160px;display:grid;gap:6px"><b>animatic.${ext}</b><span class="muted" style="font-size:12px">${(Rec.lastBlob.size/1048576).toFixed(1)}MB</span><div class="row"><button class="btn sm pri" data-act="recSave">${ic('download','s')}저장</button><button class="btn sm" data-act="recAttach" ${Rec.lastBlob.size>20*1048576?'disabled title="20MB 이하만 첨부할 수 있어요"':''}>${ic('save','s')}버전에 첨부</button></div></div></div>`}
+ o.innerHTML=`<div class="divider"></div><div class="row"><video src="${Rec.lastUrl}" controls style="width:200px;border-radius:8px;background:#000"></video><div style="flex:1;min-width:160px;display:grid;gap:6px"><b>animatic.${ext}</b><span class="muted" style="font-size:12px">${(Rec.lastBlob.size/1048576).toFixed(1)}MB</span><div class="row"><button class="btn sm pri" data-act="recSave">${ic('download','s')}저장</button><button class="btn sm" data-act="recAttach" ${Rec.lastBlob.size>20*1048576?'disabled title="20MB 이하만 첨부할 수 있습니다"':''}>${ic('save','s')}버전에 첨부</button></div></div></div>`}
 
 /* ---------- zip ---------- */
-async function buildZip(){if(!window.JSZip){toast('ZIP 라이브러리를 불러오지 못했어요. 개별 파일로 저장해 주세요.',{err:true});return}
- const p=S.proj;const z=new JSZip();const files=packFiles(p);const langs=enabledLangs(p);toast('패키지를 만드는 중…');
+async function buildZip(){if(!window.JSZip){toast('ZIP 라이브러리를 불러오지 못했습니다. 개별 파일로 저장하세요.',{err:true});return}
+ const p=S.proj;const z=new JSZip();const files=packFiles(p);const langs=enabledLangs(p);toast('패키지를 만드는 중입니다.');
  z.file('brief.md',buildBrief(p));z.file('project.json',JSON.stringify({format:'motion-brief/1',project:stripForExport(p)},null,1));z.file('REQUEST.txt',claudeRequest(p));
  langs.forEach(l=>{z.file(`narration_${l}.txt`,ttsBody(p,l,p.tts.sceneBreak));z.file(`subtitles_${l}.srt`,buildSrt(p,l))});z.file('tts_style_instructions.txt',styleInstruction(p));z.file('bgm_brief.txt',bgmBriefKo(p)+'\n\n[EN prompt]\n'+bgmPromptEn(p));
  const fails=[];const add=async(x)=>{try{if(x.audio){const a=await audioBytes(x.assetId);z.file(x.path,a.bytes)}else{z.file(x.path,await Store.fetchBlob(x.assetId))}}catch(e){fails.push(x.path)}};
  const all=[files.narration,files.bgm,...Object.values(files.stills),...Object.values(files.refs)].filter(Boolean);for(const x of all)await add(x);
  const cv=document.createElement('canvas');const [w,h]=aspectWH(p.brief.aspect);cv.width=w;cv.height=h;drawThumb(cv.getContext('2d'),w,h,p);const tb=await new Promise(r=>cv.toBlob(r,'image/png'));if(tb)z.file('thumbnail.png',tb);
  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
- await saveFile(`${slug(p.title)}_${S.versions[0]?'v'+S.versions[0].n:'draft'}.zip`,blob);if(fails.length)toast(`일부 파일을 넣지 못했어요: ${fails.join(', ')}`,{err:true})}
+ await saveFile(`${slug(p.title)}_${S.versions[0]?'v'+S.versions[0].n:'draft'}.zip`,blob);if(fails.length)toast(`일부 파일을 넣지 못했습니다: ${fails.join(', ')}`,{err:true})}
