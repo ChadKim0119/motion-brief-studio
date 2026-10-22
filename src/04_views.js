@@ -112,7 +112,7 @@ const LIVE={
  ttsCount:()=>{const b=ttsBody(S.proj,S.proj.tts.lang,S.proj.tts.sceneBreak);return `${b.replace(/\s/g,'').length.toLocaleString()}자 · 약 ${secs(b.replace(/\s/g,'').length/(S.proj.voice.speechRate||6))}`},
  bgmValues:()=>bgmValues(S.proj.bgm),
  bgmWords:()=>esc(moodWords(S.proj.bgm)),
- bgmPreview:()=>esc(bgmBriefKo(S.proj).split('\n').slice(1,-1).join('\n')),
+ bgmPreview:()=>esc(bgmBriefPreview(S.proj)),
  bgmKo:()=>esc(bgmBriefKo(S.proj)),
  bgmEn:()=>esc(bgmPromptEn(S.proj)),
  thumbTitle:()=>'',
@@ -123,7 +123,7 @@ function live(){if(!S.proj)return;for(const el of $$('[data-live]')){const f=LIV
 function viewHome(){const ps=S.projects.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
  return `<div class="wrap">
  <section class="hero"><div><div class="eyebrow" style="margin-bottom:12px">모션그래픽 기획 · 편집 · 버전 관리</div><h1>스크립트에서 <em>제작 안내서</em>까지,<br>한 화면에서 다듬기</h1><p>주제를 정하면 Claude가 씬 구성과 나레이션 초안을 만들고, 오디오에 맞춰 타이밍과 연출을 편집합니다. 마지막엔 다른 Claude 작업에 그대로 넘길 제작 안내서, 애니마틱 MP4, 썸네일을 받습니다.</p></div>
- <div class="row" style="justify-content:flex-end"><button class="btn lg" data-act="import">${ic('import')}안내서 가져오기</button><button class="btn lg pri" data-act="newProject">${ic('plus')}새 프로젝트</button></div></section>
+ <div class="row hero-actions"><button class="btn lg" data-act="import">${ic('import')}안내서 가져오기</button><button class="btn lg pri" data-act="newProject">${ic('plus')}새 프로젝트</button></div></section>
  <div class="flow">${[
   ['기획','주제, 핵심 메시지, 길이·화면비, 비주얼 스타일, 레퍼런스, BGM 성격을 정합니다.','brief'],
   ['스크립트','씬마다 나레이션·화면 텍스트·제작 의도를 씁니다. Claude 초안과 번역을 쓸 수 있습니다.','scenes[]'],
@@ -150,12 +150,12 @@ function viewBrief(){const p=S.proj,b=p.brief;const langs=enabledLangs(p);
    <div class="field"><label for="b-aud">타겟 시청자</label><input class="in" id="b-aud" data-bind="p.brief.audience" value="${esc(b.audience)}" placeholder="예: 신차 구매 고객, 딜러사 임원"></div>
   </section>
   <section class="card sec"><div class="sec-h"><h3>형식</h3></div>
-   <div class="field"><div class="lbl">목표 길이<span class="mono" style="font-size:13px">${b.duration}초</span></div><input type="range" id="b-dur" min="10" max="180" step="5" value="${b.duration}" style="${rangeStyle(b.duration,10,180)}" data-bind="p.brief.duration" data-num data-rerender>
+   <div class="field"><div class="lbl">목표 길이<span class="mono" style="font-size:13px">${b.duration}초</span></div><input type="range" id="b-dur" aria-label="목표 영상 길이" min="10" max="180" step="5" value="${b.duration}" style="${rangeStyle(b.duration,10,180)}" data-bind="p.brief.duration" data-num data-rerender>
     <div class="chips">${[15,30,45,60,90,120].map(x=>`<button class="chip" aria-pressed="${b.duration===x}" data-set="p.brief.duration" data-v="${x}" data-num>${x}초</button>`).join('')}</div></div>
    <div class="field"><div class="lbl">화면비</div>${seg('p.brief.aspect',ASPECTS.map(a=>[a[0],a[1]]),b.aspect)}</div>
    <div class="grid2"><div class="field"><div class="lbl">프레임레이트</div>${seg('p.brief.fps',[[24,'24'],[30,'30'],[60,'60']],b.fps,'data-num')}</div>
    <div class="field"><div class="lbl">레터박스</div><div class="trow" style="padding:0"><span class="muted" style="font-size:12px">위아래 시네마 바</span><button class="toggle" aria-pressed="${b.letterbox}" data-flip="p.brief.letterbox" aria-label="레터박스"></button></div></div></div>
-   <div class="field"><div class="lbl">나레이션 속도<span class="hint">길이 예측용 · 초당 글자 수(공백 제외)</span></div><div class="range-row"><span>느림</span><input type="range" id="b-rate" min="4" max="9" step="0.1" value="${p.voice.speechRate}" style="${rangeStyle(p.voice.speechRate,4,9)}" data-bind="p.voice.speechRate" data-num><b>${p.voice.speechRate}</b></div></div>
+   <div class="field"><div class="lbl">나레이션 속도<span class="hint">길이 예측용 · 초당 글자 수(공백 제외)</span></div><div class="range-row"><span>느림</span><input type="range" id="b-rate" aria-label="나레이션 속도" min="4" max="9" step="0.1" value="${p.voice.speechRate}" style="${rangeStyle(p.voice.speechRate,4,9)}" data-bind="p.voice.speechRate" data-num><b>${p.voice.speechRate}</b></div></div>
   </section>
   <section class="card sec span"><div class="sec-h"><h3>비주얼 스타일</h3><span class="muted" style="font-size:12px">스타일을 고르면 팔레트·폰트·레터박스가 함께 바뀝니다</span></div>
    <div class="styles">${STYLES.map(s=>`<button class="stycard" aria-pressed="${b.style===s.k}" data-act="style" data-arg="${s.k}"><div class="pv" style="background:${s.pal.bg}"><span style="position:absolute;left:10px;top:9px;width:40%;height:7px;border-radius:3px;background:${s.pal.text};opacity:.9"></span><span style="position:absolute;left:10px;top:21px;width:26%;height:5px;border-radius:3px;background:${s.pal.primary}"></span><span style="position:absolute;right:10px;bottom:8px;width:16px;height:16px;border-radius:50%;background:${s.pal.accent}"></span>${s.letterbox?'<span style="position:absolute;left:0;right:0;top:0;height:5px;background:#000"></span><span style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#000"></span>':''}</div><b>${s.n}</b><span>${s.d}</span></button>`).join('')}</div>
@@ -240,7 +240,7 @@ function viewNarr(){const p=S.proj,v=p.voice,n=p.narration;const langs=enabledLa
   <section class="card sec"><div class="sec-h"><h3>② 나레이션 오디오</h3>${n?`<span class="pill ok">${ic('check','s')}${tl.aligned?'타이밍 정렬됨':'업로드됨'}</span>`:''}</div>
    ${n?`<div class="row" style="flex-wrap:nowrap"><div style="flex:1;min-width:0"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(n.name)}</b><span class="muted mono" style="font-size:11.5px">${n.duration.toFixed(2)}s · ${esc(n.mime||'')}</span></div><button class="btn sm" data-act="narrPlay">${ic('play','s')}듣기</button><button class="btn sm" data-act="narrUpload">${ic('upload','s')}교체</button><button class="ibtn sm" data-act="narrRemove" aria-label="오디오 제거">${ic('trash','s')}</button></div>
    <canvas class="wave" id="wave" height="120"></canvas>
-   <div class="row"><button class="btn pri" data-act="align">${ic('wand')}자막·씬 타이밍 자동 맞춤</button><div class="field" style="flex:1;min-width:160px"><div class="range-row"><span>영상 끝 여유</span><input type="range" id="tail" min="0" max="8" step="0.5" value="${p.tail}" style="${rangeStyle(p.tail,0,8)}" data-bind="p.tail" data-num><b>${p.tail}s</b></div></div></div>
+   <div class="row"><button class="btn pri" data-act="align">${ic('wand')}자막·씬 타이밍 자동 맞춤</button><div class="field" style="flex:1;min-width:160px"><div class="range-row"><span>영상 끝 여유</span><input type="range" id="tail" aria-label="영상 끝 여유" min="0" max="8" step="0.5" value="${p.tail}" style="${rangeStyle(p.tail,0,8)}" data-bind="p.tail" data-num><b>${p.tail}s</b></div></div></div>
    <p class="muted" style="font-size:12px">무음 구간을 찾아 자막 줄 수에 맞게 나눕니다. 결과가 어긋난 줄은 아래 표에서 시간을 직접 고치거나, 씬 편집 타임라인에서 경계를 끌어 조정하세요.</p>
    <div class="tbl-wrap"><table class="ltable"><thead><tr><th>#</th><th>씬</th><th>자막</th><th>시작</th><th>끝</th><th></th></tr></thead><tbody>${tl.lines.map((x,k)=>`<tr data-lid="${x.l.id}"><td class="mono muted">${k+1}</td><td class="mono" style="color:var(--accent)">${pad(x.g.i+1)}</td><td class="txt">${esc(x.l.ko)}</td><td><input type="number" step="0.01" id="ls-${x.l.id}" data-bind="L:${x.g.s.id}:${x.l.id}.start" data-num value="${x.est?'':(+x.start).toFixed(2)}" placeholder="${(+x.start).toFixed(2)}"></td><td><input type="number" step="0.01" id="le-${x.l.id}" data-bind="L:${x.g.s.id}:${x.l.id}.end" data-num value="${x.est?'':(+x.end).toFixed(2)}" placeholder="${(+x.end).toFixed(2)}"></td><td><button class="ibtn sm" data-act="playLine" data-arg="${x.start}:${x.end}" aria-label="이 줄 듣기">${ic('play','s')}</button></td></tr>`).join('')}</tbody></table></div>`
    :`<div class="drop" data-act="narrUpload" data-dropaudio style="padding:40px 18px">${ic('mic','l')}<b style="font-size:14px;color:var(--fg)">나레이션 오디오 올리기</b><span style="font-size:12px">WAV · MP3 · M4A · 14MB 이하 · 클릭하거나 끌어다 놓기</span></div>

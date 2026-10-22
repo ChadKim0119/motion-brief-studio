@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
     await page.goto(process.env.BGM_TEST_URL || 'http://127.0.0.1:5173');
     await page.getByRole('button', { name: '예시 프로젝트 열기', exact: true }).click();
     await page.getByRole('button', { name: 'BGM 설정', exact: true }).first().click();
+    await page.locator('.modal').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
     assert.equal(await page.locator('.bgm-settings').isVisible(), false);
     await page.locator('[data-act="bgmPreset"][data-arg="launch"]').click();
     const before = await page.evaluate(() => ({ selected: S.sel, notes: S.proj.bgm.notes }));
@@ -61,7 +62,10 @@ const { chromium } = require('playwright');
       for (const mode of ['simple', 'expert']) {
         await page.locator(`[data-bgm-mode="${mode}"]`).click();
         const size = await page.locator('.bgm-modal .modal-b').evaluate(el => ({ h: el.clientHeight, sh: el.scrollHeight, w: el.clientWidth, sw: el.scrollWidth }));
-        assert.ok(size.sh <= size.h + 1 && size.sw <= size.w + 1, `${width}×${height} ${mode}: ${JSON.stringify(size)}`);
+        assert.ok(size.sw <= size.w + 1, `${width}×${height} ${mode}: horizontal overflow`);
+        if (height >= 860) assert.ok(size.sh <= size.h + 1, `${width}×${height} ${mode}: ${JSON.stringify(size)}`);
+        // Short windows keep readable controls and scroll the body; footer stays reachable.
+        assert.equal(await page.locator('[data-x2]').isVisible(), true);
       }
     }
     await page.setViewportSize({ width: 393, height: 852 });

@@ -5,7 +5,7 @@
 ![씬 편집](docs/screenshots/s3_edit.png)
 
 ## 디자인 시스템
-화면은 **MapStone 디자인 시스템(Blue Infographic v1)** 을 따릅니다. 토큰(`ms-color-*`, `ms-space-*`, `ms-radius-*`, `ms-shadow-*`, 모션)은 `src/01_head.html`의 `:root`에 MapStone `tokens.json` 값 그대로 정의하고, 앱 내부 별칭(`--bg`, `--accent` …)은 모두 그 의미 토큰을 가리킵니다. 글꼴은 Pretendard Variable 하나(`dist/fonts/`), 라이트 테마 하나이며, 문구는 합니다체·과거형 토스트·`YYYY.MM.DD HH:mm` 날짜 형식을 씁니다.
+화면은 `npx getdesign@latest add apple`로 추가한 [DESIGN.md](DESIGN.md)의 **Apple 스타일**을 따릅니다. 액션 블루(`#0066cc`), 흰색·중립 회색 표면, 다크 헤더, 시스템 글꼴, 알약형 CTA를 적용합니다. 기존 `ms-*` 토큰 이름은 컴포넌트 호환을 위해 유지하며 값은 Apple 팔레트와 형태로 교체했습니다. 홈·설명 본문은 17px, 편집 도구는 12~14px로 작업 밀도를 유지합니다. SF 글꼴은 운영체제에서 사용하며 별도로 배포하지 않습니다.
 
 애니마틱(영상) 안의 글꼴·색은 프로젝트별 비주얼 스타일 설정을 따르며 디자인 시스템과 별개입니다.
 
