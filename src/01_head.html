@@ -733,4 +733,85 @@ input[type=color]{border-radius:var(--ms-radius-reference);border:2px solid rgb(
   .flow{grid-template-columns:1fr 1fr} .flow>div{border-right:0;border-bottom:1px solid var(--line)}
 }
 @media (max-width:480px){.grid3,.styles,.presets{grid-template-columns:1fr} .optgrid{grid-template-columns:repeat(3,minmax(0,1fr))} .flow{grid-template-columns:1fr}}
+
+/* BGM: mood and live brief stay side by side; expert controls share the same page. */
+.modal.bgm-modal{width:min(1480px,100%);max-height:100%}
+.bgm-modal .modal-h{padding:var(--ms-space-3) var(--ms-space-5)}
+.bgm-modal .modal-b{padding:var(--ms-space-3) var(--ms-space-5);gap:var(--ms-space-3)}
+.bgm-modal .modal-f{padding:var(--ms-space-3) var(--ms-space-5)}
+.bgm-toolbar,.bgm-brief-tools{display:flex;align-items:center;justify-content:space-between;gap:var(--ms-space-3)}
+.bgm-toolbar{margin-bottom:var(--ms-space-2);font-size:12px}
+.bgm-toolbar .seg{width:240px;flex:none}
+.bgm-modal .bgm{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:var(--ms-space-5);align-items:start}
+.bgm-modal .bgm.bgm-expert{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr)}
+.bgm-column,.bgm-column>.bgm-expert{display:grid;gap:var(--ms-space-2);min-width:0;align-content:start}
+.bgm-simple .bgm-expert{display:none}
+.bgm-modal .grp{gap:var(--ms-space-2)}
+.bgm-modal .grp-h{flex-wrap:wrap}
+.bgm-modal .presets{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ms-space-2)}
+.bgm-modal .preset{padding:var(--ms-space-2);border-radius:var(--ms-radius-control)}
+.bgm-modal .preset b{font-size:12px;line-height:18px}
+.bgm-modal .preset span{font-size:11px;line-height:16px}
+.bgm-expert .preset span{display:none}
+.bgm-modal .moodpad{aspect-ratio:auto;height:clamp(160px,22vh,240px)}
+.bgm-modal .bgm-simple .moodpad{height:clamp(220px,32vh,360px)}
+.bgm-modal .moodpad:focus-visible{outline:2px solid var(--ms-color-focus-ring);outline-offset:3px}
+.bgm-modal .moodpad .q{font-size:11px}
+.bgm-modal .moodpad .q span{font-size:10px}
+.bgm-modal .field{gap:var(--ms-space-1)}
+.bgm-modal .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ms-space-2)}
+.bgm-modal .chips{gap:var(--ms-space-1)}
+.bgm-modal .chip{height:28px;padding:0 var(--ms-space-2);font-size:11px}
+.bgm-modal .bpm{flex-wrap:wrap;gap:var(--ms-space-2)}
+.bgm-modal .bpm b{font-size:24px;min-width:44px}
+.bgm-modal .bpm input{flex:1;min-width:48px;width:48px}
+.bgm-modal .bpm small{font-size:10px}
+.bgm-modal .arc{height:72px}
+.bgm-modal .briefout{font-size:11px;line-height:16px;padding:var(--ms-space-2);overflow-wrap:anywhere}
+.bgm-modal .briefout.en{font-size:11px;line-height:17px}
+.bgm-values{display:grid;grid-template-columns:1fr 1fr;gap:var(--ms-space-2)}
+.bgm-values>div{display:grid;gap:var(--ms-space-1);padding:var(--ms-space-2) var(--ms-space-3);background:var(--ms-color-surface-subtle);border:1px solid var(--ms-color-border-default);border-radius:var(--ms-radius-control)}
+.bgm-values span{font-size:12px;color:var(--ms-color-text-secondary)}
+.bgm-values strong{font-size:24px;line-height:28px;font-variant-numeric:tabular-nums;color:var(--ms-color-action-primary)}
+.bgm-values small{font-size:11px;font-weight:500;color:var(--ms-color-text-muted)}
+.bgm-values meter{width:100%;height:6px;accent-color:var(--ms-color-action-primary)}
+.bgm-values meter::-webkit-meter-optimum-value{background:var(--ms-color-action-primary)}
+.bgm-summary p.muted{margin:0;line-height:16px}
+.bgm-summary .seg{min-width:0}
+.bgm-summary .drop{padding:var(--ms-space-3)}
+.bgm-words{margin:0;font-size:12px;font-weight:600;color:var(--ms-color-text-secondary)}
+.bgm-brief-tools .seg{width:150px}
+.bgm-modal textarea{min-height:48px}
+@media(min-width:960px) and (max-height:780px){
+ .bgm-modal .modal-b{padding-top:var(--ms-space-2);padding-bottom:var(--ms-space-2)}
+ .bgm-column,.bgm-column>.bgm-expert{gap:var(--ms-space-2)}
+ .bgm-modal .grp{gap:var(--ms-space-1)}
+ .bgm-modal .moodpad{height:140px}
+ .bgm-expert .presets{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .bgm-modal .chip{height:26px}
+ .bgm-modal .preset span{display:none}
+ .bgm-modal .bgm-simple .preset span{display:block}
+ .bgm-modal .arc{height:72px}
+ .bgm-values>div{padding:var(--ms-space-1) var(--ms-space-2);gap:0;grid-template-columns:auto 1fr;align-items:center}
+ .bgm-values strong{text-align:right}
+ .bgm-values meter{grid-column:1/-1}
+ .bgm-values strong{font-size:22px;line-height:26px}
+ .bgm-modal .briefout{line-height:15px}
+ .bgm-modal textarea{height:44px;min-height:44px}
+ .bgm-modal .in{min-height:32px;height:32px}
+}
+@media(max-width:959px){
+ .bgm-modal .bgm.bgm-expert{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .bgm-settings{grid-column:1/-1}
+ .bgm-settings>.grp{grid-template-columns:1fr 1fr;align-items:start}
+ .bgm-settings .grp-h{grid-column:1/-1}
+ .bgm-toolbar>span{display:none}
+}
+@media(max-width:600px){
+ .bgm-modal .modal-b{padding:var(--ms-space-3)}
+ .bgm-modal .bgm{grid-template-columns:1fr}
+ .bgm-settings>.grp{grid-template-columns:1fr}
+ .bgm-modal .modal-f .msg{display:none}
+ .bgm-modal .modal-f .btn{flex:1 1 auto}
+}
 </style>
